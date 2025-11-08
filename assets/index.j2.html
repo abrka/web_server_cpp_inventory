@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <h1>Create New Message</h1>
+  <a href="/new">Create a message</a>
+  <h1>Message List</h1>
+  <ul>
+    {% for msg in messages %}
+    <li>
+      <ul>
+        <li>User: {{ msg.user }}</li>
+        <li>Time Added: <span class="unix-time">{{ msg.time_added }}</span></li>
+        <li>Message: {{ msg.text }}</li>
+        <a href="/messages/{{ loop.index }}">View Message Details</a>
+      </ul>
+    </li>
+    {% endfor %}
+  </ul>
+  <script src="unix_time_to_time.js"></script>
+</body>
+
+</html>

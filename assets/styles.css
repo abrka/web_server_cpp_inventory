@@ -1,0 +1,31 @@
+html {
+  overflow-y: hidden;
+}
+
+body {
+  background-image: url('gradient.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  height: 100vh;
+  /* Ensures the body takes up the full viewport height */
+  margin: 0;
+  /* Removes default body margin */
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.icon-div {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon {
+  width: 15%;  
+}
