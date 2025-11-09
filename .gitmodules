@@ -4,3 +4,6 @@
 [submodule "external/nlohmann_json"]
 	path = external/nlohmann_json
 	url = https://github.com/nlohmann/json.git
+[submodule "external/web_server_cpp"]
+	path = external/web_server_cpp
+	url = https://github.com/abrka/web_server_cpp.git
