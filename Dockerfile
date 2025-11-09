@@ -13,6 +13,9 @@ WORKDIR /apps/msg_board
 # Copy your project files into the container
 COPY . /apps/msg_board
 
+# Pull git submodules
+RUN git submodule update --init --recursive
+
 # Create a build directory and run CMake
 RUN rm -rf build && mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release
 
