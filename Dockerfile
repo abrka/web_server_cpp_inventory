@@ -8,10 +8,10 @@ RUN apt-get update && apt-get install -y cmake
 RUN apt-get install -y php
 
 # Set the working directory inside the container
-WORKDIR /apps/msg_board
+WORKDIR /apps/inventory
 
 # Copy your project files into the container
-COPY . /apps/msg_board
+COPY . /apps/inventory
 
 # Create a build directory and run CMake
 RUN rm -rf build && mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -19,8 +19,8 @@ RUN rm -rf build && mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Relea
 # Build the project
 RUN cd build && make
 
-WORKDIR /apps/msg_board/build/
+WORKDIR /apps/inventory/build/
 
 # (Optional) If you want to run the built executable directly,
 # define a default command to execute when the container starts.
-CMD ["./web_server_cpp_message_board"]
+CMD ["./web_server_cpp_inventory"]
