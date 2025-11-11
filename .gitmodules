@@ -7,3 +7,9 @@
 [submodule "external/web_server_cpp"]
 	path = external/web_server_cpp
 	url = https://github.com/abrka/web_server_cpp.git
+[submodule "external/libpqxx"]
+	path = external/libpqxx
+	url = https://github.com/jtv/libpqxx.git
+[submodule "external/dotenv"]
+	path = external/dotenv
+	url = https://github.com/laserpants/dotenv-cpp.git
