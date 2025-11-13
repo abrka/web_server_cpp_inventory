@@ -1,22 +1,30 @@
-# Note: the module name is psycopg, not psycopg3
+import sys
 import os
 import psycopg2
 import dotenv
 
-dotenv.load_dotenv()
+dotenv.load_dotenv(sys.argv[1])
 
 # Connect to an existing database
 with psycopg2.connect(dsn=os.getenv("DATABASE_PUBLIC_URI")) as conn:  # 5432 as a default if not found
     # Open a cursor to perform database operations
     with conn.cursor() as cur:
         cur.execute("""
-            CREATE TABLE IF NOT EXISTS categories( 
+            DROP TABLE IF EXISTS items;
+        """)
+        
+        cur.execute("""
+            DROP TABLE IF EXISTS categories;
+        """)
+
+        cur.execute("""
+            CREATE TABLE categories( 
               id SERIAL PRIMARY KEY,
               name VARCHAR(255)
             );
         """)
         cur.execute("""
-            CREATE TABLE IF NOT EXISTS categories( 
+            CREATE TABLE items( 
               id SERIAL PRIMARY KEY,
               name VARCHAR(255),
               category_id INT REFERENCES categories(id)

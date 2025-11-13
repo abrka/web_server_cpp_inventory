@@ -23,6 +23,15 @@ int main() {
   server.init(ip.c_str(), port.c_str(), 10);
 
   server.register_http_req_handler(
+      std::regex{R"(/items/(\d+))"}, "OPTIONS",
+      [](const HTTP::HttpRequest &) {
+        return HTTP::HttpResponse{201,
+                                  "",
+                                  {{"Access-Control-Allow-Origin", "*"},
+                                   {"Access-Control-Allow-Methods", "DELETE"}},
+                                  ""};
+      });
+  server.register_http_req_handler(
       std::regex{R"(/items/(\d+))"}, "GET",
       [&pg_connection](const HTTP::HttpRequest &req) {
         try {
@@ -34,7 +43,8 @@ int main() {
 
           return HTTP::HttpResponse{200,
                                     "OK",
-                                    {{"Content-Type", "application/json"}},
+                                    {{"Content-Type", "application/json"},
+                                     {"Access-Control-Allow-Origin", "*"}},
                                     nlohmann::json(pg_result).dump()};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
@@ -44,22 +54,30 @@ int main() {
         }
       });
   server.register_http_req_handler(
-      std::regex{R"(/items/)"}, "GET",
-      [&pg_connection](const HTTP::HttpRequest &) {
+      std::regex{R"(/categories/(\d+)/items/)"}, "GET",
+      [&pg_connection](const HTTP::HttpRequest &req) {
         try {
+          std::string category_id = req.custom_params[1];
           pqxx::work transaction{pg_connection};
-          pqxx::result pg_result = transaction.exec("SELECT * FROM items;");
+          pqxx::result pg_result =
+              transaction.exec("SELECT * FROM items WHERE category_id=$1;",
+                               pqxx::params{category_id});
           transaction.commit();
 
           return HTTP::HttpResponse{200,
                                     "OK",
-                                    {{"Content-Type", "application/json"}},
+                                    {{"Content-Type", "application/json"},
+                                     {"Access-Control-Allow-Origin", "*"}},
                                     nlohmann::json(pg_result).dump()};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
                     << '\n';
           return HTTP::HttpResponse{
-              404, "Exception in /items/:id GET handler in server", {}, ""};
+              404,
+              "Exception in /categories/:category_id/items/ GET handler in "
+              "server",
+              {},
+              ""};
         }
       });
   server.register_http_req_handler(
@@ -78,8 +96,11 @@ int main() {
           std::string created_id = pg_result[0]["id"].c_str();
           transaction.commit();
 
-          return HTTP::HttpResponse{
-              201, "Created", {{"Location", "items/" + created_id}}, ""};
+          return HTTP::HttpResponse{201,
+                                    "Created",
+                                    {{"Location", "items/" + created_id},
+                                     {"Access-Control-Allow-Origin", "*"}},
+                                    ""};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
                     << '\n';
@@ -103,7 +124,8 @@ int main() {
               pqxx::params{id, input_name, category_id});
           transaction.commit();
 
-          return HTTP::HttpResponse{204, "No Content", {}, ""};
+          return HTTP::HttpResponse{
+              204, "No Content", {{"Access-Control-Allow-Origin", "*"}}, ""};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
                     << '\n';
@@ -122,13 +144,24 @@ int main() {
                            pqxx::params{id});
           transaction.commit();
 
-          return HTTP::HttpResponse{204, "No Content", {}, ""};
+          return HTTP::HttpResponse{
+              204, "No Content", {{"Access-Control-Allow-Origin", "*"}}, ""};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
                     << '\n';
           return HTTP::HttpResponse{
               404, "Exception in /items/:id DELETE handler in server", {}, ""};
         }
+      });
+
+  server.register_http_req_handler(
+      std::regex{R"(/categories/(\d+))"}, "OPTIONS",
+      [](const HTTP::HttpRequest &) {
+        return HTTP::HttpResponse{201,
+                                  "",
+                                  {{"Access-Control-Allow-Origin", "*"},
+                                   {"Access-Control-Allow-Methods", "DELETE"}},
+                                  ""};
       });
   server.register_http_req_handler(
       std::regex{R"(/categories/(\d+))"}, "GET",
@@ -142,7 +175,8 @@ int main() {
 
           return HTTP::HttpResponse{200,
                                     "OK",
-                                    {{"Content-Type", "application/json"}},
+                                    {{"Content-Type", "application/json"},
+                                     {"Access-Control-Allow-Origin", "*"}},
                                     nlohmann::json(pg_result).dump()};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
@@ -162,7 +196,8 @@ int main() {
 
           return HTTP::HttpResponse{200,
                                     "OK",
-                                    {{"Content-Type", "application/json"}},
+                                    {{"Content-Type", "application/json"},
+                                     {"Access-Control-Allow-Origin", "*"}},
                                     nlohmann::json(pg_result).dump()};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
@@ -185,8 +220,11 @@ int main() {
           std::string created_id = pg_result[0]["id"].c_str();
           transaction.commit();
 
-          return HTTP::HttpResponse{
-              201, "Created", {{"Location", "categories/" + created_id}}, ""};
+          return HTTP::HttpResponse{201,
+                                    "Created",
+                                    {{"Location", "categories/" + created_id},
+                                     {"Access-Control-Allow-Origin", "*"}},
+                                    ""};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
                     << '\n';
@@ -211,7 +249,8 @@ int main() {
                            pqxx::params{id, input_name});
           transaction.commit();
 
-          return HTTP::HttpResponse{204, "No Content", {}, ""};
+          return HTTP::HttpResponse{
+              204, "No Content", {{"Access-Control-Allow-Origin", "*"}}, ""};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
                     << '\n';
@@ -240,7 +279,8 @@ int main() {
                            pqxx::params{id});
           transaction.commit();
 
-          return HTTP::HttpResponse{204, "No Content", {}, ""};
+          return HTTP::HttpResponse{
+              204, "No Content", {{"Access-Control-Allow-Origin", "*"}}, ""};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
                     << '\n';
