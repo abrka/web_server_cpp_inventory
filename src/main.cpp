@@ -11,6 +11,7 @@
 #include "server_http.hpp"
 
 #include "json_adl_pqxx_result.hpp"
+#include "json_adl_pqxx_row.hpp"
 
 int main() {
   dotenv::init("../.env");
@@ -23,8 +24,7 @@ int main() {
   server.init(ip.c_str(), port.c_str(), 10);
 
   server.register_http_req_handler(
-      std::regex{R"(/items/(\d+))"}, "OPTIONS",
-      [](const HTTP::HttpRequest &) {
+      std::regex{R"(/items/(\d+))"}, "OPTIONS", [](const HTTP::HttpRequest &) {
         return HTTP::HttpResponse{201,
                                   "",
                                   {{"Access-Control-Allow-Origin", "*"},
@@ -45,7 +45,7 @@ int main() {
                                     "OK",
                                     {{"Content-Type", "application/json"},
                                      {"Access-Control-Allow-Origin", "*"}},
-                                    nlohmann::json(pg_result).dump()};
+                                    nlohmann::json(pg_result[0]).dump()};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
                     << '\n';
@@ -93,14 +93,16 @@ int main() {
               transaction.exec("INSERT INTO items(name,category_id) VALUES "
                                "($1, $2) RETURNING *;",
                                pqxx::params{input_name, category_id});
-          std::string created_id = pg_result[0]["id"].c_str();
+
+          nlohmann::json created_object = pg_result[0];
+          std::string created_id = created_object["id"];
           transaction.commit();
 
-          return HTTP::HttpResponse{201,
+          return HTTP::HttpResponse{200,
                                     "Created",
                                     {{"Location", "items/" + created_id},
                                      {"Access-Control-Allow-Origin", "*"}},
-                                    ""};
+                                    created_object.dump()};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
                     << '\n';
@@ -177,7 +179,7 @@ int main() {
                                     "OK",
                                     {{"Content-Type", "application/json"},
                                      {"Access-Control-Allow-Origin", "*"}},
-                                    nlohmann::json(pg_result).dump()};
+                                    nlohmann::json(pg_result[0]).dump()};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
                     << '\n';
@@ -217,14 +219,16 @@ int main() {
           pqxx::result pg_result = transaction.exec(
               "INSERT INTO categories(name) VALUES($1) RETURNING *;",
               pqxx::params{input_name});
-          std::string created_id = pg_result[0]["id"].c_str();
+
+          nlohmann::json created_object = pg_result[0];
+          std::string created_id = created_object["id"];
           transaction.commit();
 
-          return HTTP::HttpResponse{201,
+          return HTTP::HttpResponse{200,
                                     "Created",
                                     {{"Location", "categories/" + created_id},
                                      {"Access-Control-Allow-Origin", "*"}},
-                                    ""};
+                                    created_object.dump()};
         } catch (const std::exception &e) {
           std::cerr << "SERVER APP ERROR: Caught Exception: " << e.what()
                     << '\n';
